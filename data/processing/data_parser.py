@@ -82,11 +82,12 @@ def dataset_path(dataset_filename: str) -> Optional[str]:
     Returns:
         str: The full path to the dataset file.
     """
-    path_exists = os.path.exists(DATASET_DIR)
+    out_path = DATASET_DIR + dataset_filename
+    path_exists = os.path.exists(out_path)
 
     if not path_exists:
-        print(f"Directory {DATASET_DIR} does not exist.")
+        print(f"File {out_path} does not exist.")
 
         return None
 
-    return DATASET_DIR + dataset_filename
+    return out_path
