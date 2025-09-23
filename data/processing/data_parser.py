@@ -3,6 +3,8 @@ import pandas as pd
 import os
 
 from data.constants.dataset_constants import DATASET_DIR
+from data.constants.raw_data_constants import OngsDatasetCols
+from data.constants.segmentation_code import osc_segmentation_codes
 
 
 def to_utf8(dataset_filename: str) -> Optional[str]:
@@ -21,22 +23,17 @@ def to_utf8(dataset_filename: str) -> Optional[str]:
         OUTPUT_ENCODING = "utf-8"
 
         full_path = dataset_path(dataset_filename)
-        path_exists = os.path.exists(full_path)
 
         if full_path is None:
             return None
 
-        filename, _ = os.path.splitext(dataset_filename)
-
-        print(
-            f"Dataset '{filename}' found in {full_path}. Converting to UTF-8...")
-
+        filename, extension = os.path.splitext(dataset_filename)
         main_df: pd.DataFrame
 
-        if dataset_filename.endswith(".xlsx"):
+        if extension == ".xlsx":
             main_df = pd.read_excel(full_path,
                                     engine="openpyxl")
-        elif dataset_filename.endswith(".csv"):
+        elif extension == ".csv":
             main_df = pd.read_csv(full_path,
                                   encoding=INPUT_ENCODING, sep=";",
                                   on_bad_lines="skip")
@@ -59,6 +56,37 @@ def to_utf8(dataset_filename: str) -> Optional[str]:
         return None
 
 
+def osc_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
+    """
+    Generates a processed OSC dataset with selected and renamed columns.
+
+    Args:
+        osc_dataset (pd.DataFrame): The original OSC dataset.
+
+    Returns:
+        pd.DataFrame: The processed OSC dataset with selected and renamed columns.
+    """
+
+    main_columns: pd.DataFrame = dataset[[OngsDatasetCols.CNPJ,
+                                          OngsDatasetCols.TX_RAZAO_SOCIAL_OSC,
+                                          OngsDatasetCols.MUNICIPIO_NOME,
+                                          OngsDatasetCols.UF_SIGLA]]
+
+    columns_map = {
+        OngsDatasetCols.CNPJ: "CNPJ",
+        OngsDatasetCols.TX_RAZAO_SOCIAL_OSC: "Razão Social",
+        OngsDatasetCols.MUNICIPIO_NOME: "Município",
+        OngsDatasetCols.UF_SIGLA: "UF"
+    }
+
+    renamed = main_columns.rename(columns=columns_map)
+    area_codes = [osc_segmentation_codes(row) for _, row in dataset.iterrows()]
+    area_codes_df = pd.DataFrame(area_codes)
+    result = pd.concat([renamed.reset_index(drop=True), area_codes_df], axis=1)
+
+    return result
+
+
 def output_path(dataset_filename: str) -> str:
     """
     Generates the output filename for a UTF-8 converted dataset.
@@ -70,6 +98,7 @@ def output_path(dataset_filename: str) -> str:
         str: The output filename with a UTF-8 suffix.
     """
     OUTPUT_SUFFIX = "_utf8"
+
     return DATASET_DIR + dataset_filename + OUTPUT_SUFFIX + ".csv"
 
 
