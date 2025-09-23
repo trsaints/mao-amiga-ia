@@ -74,6 +74,12 @@ def osc_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
                                           OngsDatasetCols.MUNICIPIO_NOME,
                                           OngsDatasetCols.UF_SIGLA]]
 
+    # CNPJ column must be a string of 14 digits
+    main_columns.loc[:, OngsDatasetCols.CNPJ] = (main_columns[OngsDatasetCols.CNPJ]
+                                                 .astype(str)
+                                                 .str
+                                                 .zfill(14))
+
     columns_map = {
         OngsDatasetCols.CNPJ: "CNPJ",
         OngsDatasetCols.TX_RAZAO_SOCIAL_OSC: "Razão Social",
