@@ -8,7 +8,7 @@ from data.constants.dataset_constants import DATASET_DIR
 def to_utf8(dataset_filename: str) -> Optional[str]:
     """
     Converts a dataset to UTF-8 encoding and saves it with a new suffix.
-    This method assumes the input dataset is encoded in 'cp860', which is the encoding for legacy systems for the Portuguese language.
+    This method assumes the input dataset is encoded in 'latin1', which is the encoding for legacy systems for the Portuguese language.
 
     Args:
         dataset_name (str): The name of the dataset file to convert.
@@ -17,7 +17,7 @@ def to_utf8(dataset_filename: str) -> Optional[str]:
         Optional[str]: The path to the converted dataset file, or None if an error occurred.
     """
     try:
-        INPUT_ENCODING = "cp860"
+        INPUT_ENCODING = "latin1"
         OUTPUT_ENCODING = "utf-8"
 
         full_path = DATASET_DIR + dataset_filename
