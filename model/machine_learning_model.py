@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class MachineLearningModel(ABC):
     @abstractmethod
-    def load_data(self, file_path):
+    def load_data(self, file_path, target_column):
         pass
 
     @abstractmethod
