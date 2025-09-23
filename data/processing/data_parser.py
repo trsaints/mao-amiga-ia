@@ -20,7 +20,7 @@ def to_utf8(dataset_filename: str) -> Optional[str]:
         INPUT_ENCODING = "latin1"
         OUTPUT_ENCODING = "utf-8"
 
-        full_path = DATASET_DIR + dataset_filename
+        full_path = dataset_path(dataset_filename)
         path_exists = os.path.exists(full_path)
 
         if not path_exists:
@@ -73,3 +73,15 @@ def output_path(dataset_filename: str) -> str:
     """
     OUTPUT_SUFFIX = "_utf8"
     return DATASET_DIR + dataset_filename + OUTPUT_SUFFIX + ".csv"
+
+
+def dataset_path(dataset_filename: str) -> str:
+    """
+    Generates the full path for a dataset file.
+
+    Args:
+        dataset_name (str): The dataset filename.
+    Returns:
+        str: The full path to the dataset file.
+    """
+    return DATASET_DIR + dataset_filename
