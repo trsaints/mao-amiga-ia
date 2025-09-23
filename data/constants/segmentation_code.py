@@ -2,7 +2,7 @@ from enum import Enum
 import pandas as pd
 from data.constants.raw_data_constants import OngsDatasetCols
 
-SEGMENTATION_CODE = Enum('segmentation_code', [
+SegmentationCode = Enum('segmentation_code', [
     ('Assistência_Social', 1),
     ('Associações_Patronais_e_Profissionais', 2),
     ('Cultura_e_Recreação', 3),
@@ -14,39 +14,45 @@ SEGMENTATION_CODE = Enum('segmentation_code', [
 ])
 
 
-def osc_segmentation_codes(entry: pd.Series) -> list[str]:
+def osc_segmentation_codes(entry: pd.Series) -> str:
     """
     Lists all available segmentation codes available in a given entry
     of the OSC dataset.
     """
-    enum_codes = []
+    def parse_code(value: str) -> int:
+        try:
+            return int(entry[value])
+        except (ValueError, TypeError):
+            return 0
 
-    if entry[OngsDatasetCols.AREA_ASSISTENCIA_SOCIAL] == 1:
-        enum_codes.append(SEGMENTATION_CODE.Assistência_Social)
+    enum_codes: list[Enum] = []
 
-    if entry[OngsDatasetCols.AREA_ASSOCIACOES_PATRONAIS_E_PROFISSIONAIS] == 1:
+    if parse_code(OngsDatasetCols.AREA_ASSISTENCIA_SOCIAL) == 1:
+        enum_codes.append(SegmentationCode.Assistência_Social)
+
+    if parse_code(OngsDatasetCols.AREA_ASSOCIACOES_PATRONAIS_E_PROFISSIONAIS) == 1:
         enum_codes.append(
-            SEGMENTATION_CODE.Associações_Patronais_e_Profissionais)
+            SegmentationCode.Associações_Patronais_e_Profissionais)
 
-    if entry[OngsDatasetCols.AREA_CULTURA_E_RECREACAO] == 1:
-        enum_codes.append(SEGMENTATION_CODE.Cultura_e_Recreação)
+    if parse_code(OngsDatasetCols.AREA_CULTURA_E_RECREACAO) == 1:
+        enum_codes.append(SegmentationCode.Cultura_e_Recreação)
 
-    if entry[OngsDatasetCols.AREA_DESENVOLVIMENTO_E_DEFESA_DE_DIREITOS_E_INTERESSES] == 1:
+    if parse_code(OngsDatasetCols.AREA_DESENVOLVIMENTO_E_DEFESA_DE_DIREITOS_E_INTERESSES) == 1:
         enum_codes.append(
-            SEGMENTATION_CODE.Desenvolvimento_e_Defesa_de_Direitos_e_Interesses)
+            SegmentationCode.Desenvolvimento_e_Defesa_de_Direitos_e_Interesses)
 
-    if entry[OngsDatasetCols.AREA_EDUCACAO_E_PESQUISA] == 1:
-        enum_codes.append(SEGMENTATION_CODE.Educação_e_Pesquisa)
+    if parse_code(OngsDatasetCols.AREA_EDUCACAO_E_PESQUISA) == 1:
+        enum_codes.append(SegmentationCode.Educação_e_Pesquisa)
 
-    if entry[OngsDatasetCols.AREA_OUTRAS_ATIVIDADES_ASSOCIATIVAS] == 1:
-        enum_codes.append(SEGMENTATION_CODE.Outras_Atividades_Associativas)
+    if parse_code(OngsDatasetCols.AREA_OUTRAS_ATIVIDADES_ASSOCIATIVAS) == 1:
+        enum_codes.append(SegmentationCode.Outras_Atividades_Associativas)
 
-    if entry[OngsDatasetCols.AREA_RELIGIAO] == 1:
-        enum_codes.append(SEGMENTATION_CODE.Religião)
+    if parse_code(OngsDatasetCols.AREA_RELIGIAO) == 1:
+        enum_codes.append(SegmentationCode.Religião)
 
-    if entry[OngsDatasetCols.AREA_SAUDE] == 1:
-        enum_codes.append(SEGMENTATION_CODE.Saúde)
+    if parse_code(OngsDatasetCols.AREA_SAUDE) == 1:
+        enum_codes.append(SegmentationCode.Saúde)
 
-    result = [code.name for code in enum_codes]
+    code_names = [code.name.replace("_", " ") for code in enum_codes]
 
-    return result
+    return ", ".join(code_names)
