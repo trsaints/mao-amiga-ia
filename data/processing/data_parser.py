@@ -71,7 +71,7 @@ def output_path(dataset_filename: str) -> str:
     Returns:
         str: The output filename with a UTF-8 suffix.
     """
-    OUTPUT_SUFFIX = "_utf8"
+    OUTPUT_SUFFIX = "_result"
     return DATASET_DIR + dataset_filename + OUTPUT_SUFFIX + ".csv"
 
 
