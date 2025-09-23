@@ -1,7 +1,7 @@
 from machine_learning_model import MachineLearningModel
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay, precision_score, f1_score
 import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
@@ -38,24 +38,33 @@ class NaiveBayesModel(MachineLearningModel):
 
     def evaluate(self):
         """
-        Avalia o desempenho do modelo Naive Bayes nos dados de teste.
+        Avalia o desempenho do modelo nos dados de teste.
 
         Exibe:
-        - Acurácia do modelo.
-        - Matriz de confusão visualizada com cores.
+        - Acurácia
+        - Precisão (média ponderada)
+        - F1 Score (média ponderada)
+        - Matriz de confusão
 
         Retorna:
         - None.
         """
         y_pred = self.model.predict(self.X_test)
+
         accuracy = accuracy_score(self.y_test, y_pred)
-        print(f'Naive Bayes Accuracy: {accuracy * 100:.2f}%')
+        precision = precision_score(self.y_test, y_pred, average='weighted')
+        f1 = f1_score(self.y_test, y_pred, average='weighted')
+
+        print(f'Acurácia: {accuracy * 100:.2f}%')
+        print(f'Precisão: {precision * 100:.2f}%')
+        print(f'F1 Score: {f1 * 100:.2f}%')
 
         cm = confusion_matrix(self.y_test, y_pred)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
         disp.plot(cmap=plt.cm.Blues)
-        plt.title("Naive Bayes Confusion Matrix")
+        plt.title(f"{self.__class__.__name__} - Matriz de Confusão")
         plt.show()
+
 
     def save_model(self, file_path):
         """
