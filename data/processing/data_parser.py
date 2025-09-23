@@ -23,9 +23,7 @@ def to_utf8(dataset_filename: str) -> Optional[str]:
         full_path = dataset_path(dataset_filename)
         path_exists = os.path.exists(full_path)
 
-        if not path_exists:
-            print(f"File {full_path} does not exist.")
-
+        if full_path is None:
             return None
 
         filename, _ = os.path.splitext(dataset_filename)
@@ -75,7 +73,7 @@ def output_path(dataset_filename: str) -> str:
     return DATASET_DIR + dataset_filename + OUTPUT_SUFFIX + ".csv"
 
 
-def dataset_path(dataset_filename: str) -> str:
+def dataset_path(dataset_filename: str) -> Optional[str]:
     """
     Generates the full path for a dataset file.
 
@@ -84,4 +82,11 @@ def dataset_path(dataset_filename: str) -> str:
     Returns:
         str: The full path to the dataset file.
     """
+    path_exists = os.path.exists(DATASET_DIR)
+
+    if not path_exists:
+        print(f"Directory {DATASET_DIR} does not exist.")
+
+        return None
+
     return DATASET_DIR + dataset_filename
