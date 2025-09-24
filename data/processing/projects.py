@@ -35,9 +35,13 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
 
     status_df = pd.DataFrame(projects_statuses, columns=["Status"])
 
-    # use brazilian_date to convert date columns
     main_columns.loc[:, ProjectsDatasetCols.DT_DATA_INICIO_PROJETO] = (
         main_columns[ProjectsDatasetCols.DT_DATA_INICIO_PROJETO]
+        .apply(brazilian_date)
+    )
+
+    main_columns.loc[:, ProjectsDatasetCols.DT_DATA_FIM_PROJETO] = (
+        main_columns[ProjectsDatasetCols.DT_DATA_FIM_PROJETO]
         .apply(brazilian_date)
     )
 
