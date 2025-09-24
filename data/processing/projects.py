@@ -2,7 +2,7 @@ from typing import Optional
 import pandas as pd
 
 from data.constants.raw_data_constants import ProjectsDatasetCols
-from data.processing.data_parser import brazilian_date
+from data.processing.data_parser import brazilian_date, valid_cnpj
 
 
 def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
@@ -43,6 +43,11 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
     main_columns.loc[:, ProjectsDatasetCols.DT_DATA_FIM_PROJETO] = (
         main_columns[ProjectsDatasetCols.DT_DATA_FIM_PROJETO]
         .apply(brazilian_date)
+    )
+
+    main_columns.loc[:, ProjectsDatasetCols.CD_IDENTIFICADOR_OSC] = (
+        main_columns[ProjectsDatasetCols.CD_IDENTIFICADOR_OSC]
+        .apply(valid_cnpj)
     )
 
     columns_map = {
