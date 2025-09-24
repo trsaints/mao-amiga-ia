@@ -116,3 +116,30 @@ def project_status(start_date: Optional[str],
         return "Ativo"
 
     return "Não Informado"
+
+def by_region(region: str, 
+              projects_dataset: pd.DataFrame,
+              osc_dataset: pd.DataFrame) -> Optional[pd.DataFrame]:
+    """
+    Filters the 'Projects' dataset per region of its responsible OSC
+
+    Args:
+        region: the Brazilian Federative Unit (UF) to look for
+        osc_dataset: the processed OSC dataset to apply the filter
+
+    Returns:
+        DataFrame: the filtered `projects_dataset`, by region
+    """
+    osc_by_region = osc_dataset.loc[osc_dataset["UF"] == region]
+
+    if osc_by_region.empty:
+        return None
+    
+    filtered_projects = projects_dataset.loc[
+        projects_dataset["CNPJ OSC"].isin(osc_by_region["CNPJ"])
+    ]
+
+    if filtered_projects.empty:
+        return None
+
+    return filtered_projects
