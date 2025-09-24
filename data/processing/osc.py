@@ -1,3 +1,5 @@
+import re
+from typing import Optional
 import pandas as pd
 from traitlets import Enum
 from data.constants.raw_data_constants import OngsDatasetCols
@@ -21,10 +23,9 @@ def osc_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
                                           OngsDatasetCols.UF_SIGLA]]
 
     # CNPJ column must be a string of 14 digits
-    main_columns.loc[:, OngsDatasetCols.CNPJ] = (main_columns[OngsDatasetCols.CNPJ]
-                                                 .astype(str)
-                                                 .str
-                                                 .zfill(14))
+    main_columns.loc[:, OngsDatasetCols.CNPJ] = (
+        main_columns[OngsDatasetCols.CNPJ].astype(str).apply(valid_cnpj)
+    )
 
     columns_map = {
         OngsDatasetCols.CNPJ: "CNPJ",
@@ -89,3 +90,19 @@ def osc_segmentation_codes(entry: pd.Series) -> str:
     code_names = [code.name.replace("_", " ") for code in enum_codes]
 
     return ", ".join(code_names)
+
+
+def valid_cnpj(raw_cnpj: str | int) -> Optional[str]:
+    # Convert to string first and then remove any non-digit characters
+    raw_cnpj_str = str(raw_cnpj)
+    digits: str = re.sub(r'\D', '', raw_cnpj_str)
+
+    zleading_cnpj = digits.zfill(14)
+
+    # Apply formatting if it's exactly 14 digits
+    if len(zleading_cnpj) == 14:
+        return re.sub(r'^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$',
+                      r'\1.\2.\3/\4-\5',
+                      zleading_cnpj)
+    else:
+        return None
