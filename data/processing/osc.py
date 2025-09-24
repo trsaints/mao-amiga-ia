@@ -37,7 +37,10 @@ def osc_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
     renamed = main_columns.rename(columns=columns_map)
     area_codes = [osc_segmentation_codes(row) for _, row in dataset.iterrows()]
     area_codes_df = pd.DataFrame(area_codes, columns=["Áreas de Atuação"])
-    result = pd.concat([renamed.reset_index(drop=True), area_codes_df], axis=1)
+    result = (
+        pd.concat([renamed.reset_index(drop=True), area_codes_df], axis=1)
+        .drop_duplicates(["CNPJ"])
+    )
 
     return result
 
