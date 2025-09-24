@@ -17,20 +17,26 @@ def osc_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: The processed OSC dataset with selected and renamed columns.
     """
 
-    main_columns: pd.DataFrame = dataset[[OngsDatasetCols.CNPJ,
-                                          OngsDatasetCols.TX_RAZAO_SOCIAL_OSC,
-                                          OngsDatasetCols.MUNICIPIO_NOME,
-                                          OngsDatasetCols.UF_SIGLA]]
+    main_columns: pd.DataFrame = dataset[
+        [OngsDatasetCols.CNPJ,
+         OngsDatasetCols.TX_RAZAO_SOCIAL_OSC,
+         OngsDatasetCols.MUNICIPIO_NOME,
+         OngsDatasetCols.SITUACAO_CADASTRAL,
+         OngsDatasetCols.UF_SIGLA]
+    ]
 
     # CNPJ column must be a string of 14 digits
     main_columns.loc[:, OngsDatasetCols.CNPJ] = (
-        main_columns[OngsDatasetCols.CNPJ].astype(str).apply(valid_cnpj)
+        main_columns[OngsDatasetCols.CNPJ]
+        .astype(str)
+        .apply(valid_cnpj)
     )
 
     columns_map = {
         OngsDatasetCols.CNPJ: "CNPJ",
         OngsDatasetCols.TX_RAZAO_SOCIAL_OSC: "Razão Social",
         OngsDatasetCols.MUNICIPIO_NOME: "Município",
+        OngsDatasetCols.SITUACAO_CADASTRAL: "Situação Cadastral",
         OngsDatasetCols.UF_SIGLA: "UF"
     }
 
