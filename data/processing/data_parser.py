@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Literal
 import pandas as pd
 import os
@@ -118,3 +119,26 @@ def brazilian_date(date_str: Optional[str]) -> Optional[str]:
         return None
 
     return parsed_date.strftime("%d/%m/%Y")
+
+
+def valid_cnpj(raw_cnpj: str | int) -> Optional[str]:
+    """
+    Validates and formats a CNPJ number.
+    Args:
+        raw_cnpj (str | int): The raw CNPJ number, which may contain non-digit characters.
+
+    Returns:
+        Optional[str]: The formatted CNPJ number (XX.XXX.XXX/XXXX-XX) if valid, otherwise None.
+    """
+
+    raw_cnpj_str = str(raw_cnpj)
+    digits: str = re.sub(r'\D', '', raw_cnpj_str)
+
+    zleading_cnpj = digits.zfill(14)
+
+    if len(zleading_cnpj) == 14:
+        return re.sub(r'^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$',
+                      r'\1.\2.\3/\4-\5',
+                      zleading_cnpj)
+    else:
+        return None
