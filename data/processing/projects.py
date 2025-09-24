@@ -34,6 +34,12 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
 
     status_df = pd.DataFrame(projects_statuses, columns=["Status"])
 
+    # use brazilian_date to convert date columns
+    main_columns.loc[:, ProjectsDatasetCols.DT_DATA_INICIO_PROJETO] = (
+        main_columns[ProjectsDatasetCols.DT_DATA_INICIO_PROJETO]
+        .apply(brazilian_date)
+    )
+
     columns_map = {
         ProjectsDatasetCols.ID_PROJETO: "ID Projeto",
         ProjectsDatasetCols.TX_NOME_PROJETO: "Nome",
@@ -51,6 +57,30 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
               .drop_duplicates(["ID Projeto"]))
 
     return result
+
+
+def brazilian_date(date_str: Optional[str]) -> Optional[str]:
+    """
+    Converts a date string to the Brazilian date format (dd/mm/yyyy).
+
+    Args:
+        date_str (Optional[str]): The input date string.
+
+    Returns:
+        Optional[str]: The date in Brazilian format, or None if conversion fails.
+    """
+    if (date_str is None
+        or str(date_str).strip() == ""
+            or str(date_str).lower() == "nan"):
+        return None
+
+    parsed_date: pd.Timestamp = pd.to_datetime(date_str,
+                                               errors="coerce")
+
+    if parsed_date is None or pd.isna(parsed_date):
+        return None
+
+    return parsed_date.strftime("%d/%m/%Y")
 
 
 def project_status(start_date: Optional[str],
