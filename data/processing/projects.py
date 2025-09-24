@@ -27,9 +27,11 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
     ]
 
     projects_statuses = [
-        project_status(row[ProjectsDatasetCols.DT_DATA_FIM_PROJETO])
+        project_status(row[ProjectsDatasetCols.DT_DATA_INICIO_PROJETO],
+                       row[ProjectsDatasetCols.DT_DATA_FIM_PROJETO])
         for _, row in source.iterrows()
     ]
+
     status_df = pd.DataFrame(projects_statuses, columns=["Status"])
 
     columns_map = {
@@ -50,7 +52,8 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-def project_status(project_end_date: Optional[str]) -> str:
+def project_status(start_date: Optional[str],
+                   end_date: Optional[str]) -> str:
     """
     Determines the status of a project based on its end date.
 
@@ -60,17 +63,35 @@ def project_status(project_end_date: Optional[str]) -> str:
     Returns:
         str: "Ativo" if the project is ongoing, "Encerrado" if it has ended.
     """
+    has_start_date = (start_date is not None
+                      and str(start_date).strip() != ""
+                      and str(start_date).lower() != "nan")
 
-    if (project_end_date is None
-        or pd.isna(project_end_date)
-            or project_end_date.strip() == ""):
-        return "Ativo"
+    has_end_date = (end_date is not None
+                    and str(end_date).strip() != ""
+                    and str(end_date).lower() != "nan")
+
+    if not has_start_date and not has_end_date:
+        return "Não Informado"
 
     # convert to datetime
-    converted_date = pd.to_datetime(project_end_date, errors="coerce")
+    parsed_start_date: pd.Timestamp = pd.to_datetime(start_date,
+                                                     errors="coerce")
+    parsed_end_date: pd.Timestamp = pd.to_datetime(end_date,
+                                                   errors="coerce")
 
-    if (not pd.isna(converted_date)
-            and converted_date < pd.Timestamp.now()):
+    has_started = (parsed_start_date is not None
+                   and not pd.isna(parsed_start_date)
+                   and parsed_start_date <= pd.Timestamp.now())
+
+    has_ended = (parsed_end_date is not None
+                 and not pd.isna(parsed_end_date)
+                 and parsed_end_date < pd.Timestamp.now())
+
+    if has_started and has_ended:
         return "Encerrado"
+
+    if has_started and not has_ended:
+        return "Ativo"
 
     return "Não Informado"
