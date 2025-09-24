@@ -64,7 +64,11 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
 
     renamed = main_columns.rename(columns=columns_map)
     result = (pd.concat([renamed.reset_index(drop=True), status_df], axis=1)
-              .drop_duplicates(["ID Projeto"]))
+              .drop_duplicates(["ID Projeto"])
+              .dropna(how="any", subset=["Data de Início"])
+              .dropna(how="all", subset=["Total de Beneficiários",
+                                         "Valor Captado (R$)",
+                                         "Valor Total (R$)"]))
 
     return result
 
