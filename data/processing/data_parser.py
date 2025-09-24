@@ -142,3 +142,24 @@ def valid_cnpj(raw_cnpj: str | int) -> Optional[str]:
                       zleading_cnpj)
     else:
         return None
+
+def write_dataset(name: str, dataset: pd.DataFrame) -> Optional[str]:
+    """
+    Writes the processed dataset into a `.csv` file.
+
+    Args:
+        name: the name to be used as the exported `.csv` file
+        dataset: the DataFrame to be written to the `.csv` file
+
+    Returns:
+        str: the absolute path of the generated dataframe
+    """
+    try:
+        OUTPUT_SUFFIX = "-dataset"
+        result_path = f"{DATASET_DIR}{name}{OUTPUT_SUFFIX}.csv"
+
+        dataset.to_csv(result_path, sep=";", encoding="utf-8")
+
+        return result_path
+    except:
+        return None
