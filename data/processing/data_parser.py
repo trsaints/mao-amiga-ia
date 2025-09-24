@@ -4,7 +4,8 @@ import os
 from data.constants.dataset_constants import DATASET_DIR
 
 
-def to_utf8(dataset_filename: str) -> Optional[str]:
+def to_utf8(dataset_filename: str,
+            separator: Optional[str] = None) -> Optional[str]:
     """
     Converts a dataset to UTF-8 encoding and saves it with a new suffix.
     This method assumes the input dataset is encoded in 'latin1', which is the encoding for legacy systems for the Portuguese language.
@@ -32,7 +33,8 @@ def to_utf8(dataset_filename: str) -> Optional[str]:
                                     engine="openpyxl")
         elif extension == ".csv":
             main_df = pd.read_csv(full_path,
-                                  encoding=INPUT_ENCODING, sep=";",
+                                  encoding=INPUT_ENCODING,
+                                  sep=separator if separator else ",",
                                   on_bad_lines="skip")
         else:
             main_df = pd.read_html(full_path,
