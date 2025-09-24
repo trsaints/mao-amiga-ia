@@ -102,13 +102,20 @@ def osc_segmentation_codes(entry: pd.Series) -> str:
 
 
 def valid_cnpj(raw_cnpj: str | int) -> Optional[str]:
-    # Convert to string first and then remove any non-digit characters
+    """
+    Validates and formats a CNPJ number.
+    Args:
+        raw_cnpj (str | int): The raw CNPJ number, which may contain non-digit characters.
+
+    Returns:
+        Optional[str]: The formatted CNPJ number (XX.XXX.XXX/XXXX-XX) if valid, otherwise None.
+    """
+
     raw_cnpj_str = str(raw_cnpj)
     digits: str = re.sub(r'\D', '', raw_cnpj_str)
 
     zleading_cnpj = digits.zfill(14)
 
-    # Apply formatting if it's exactly 14 digits
     if len(zleading_cnpj) == 14:
         return re.sub(r'^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$',
                       r'\1.\2.\3/\4-\5',
