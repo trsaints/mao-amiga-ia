@@ -94,3 +94,27 @@ def dataset_path(dataset_filename: str) -> Optional[str]:
         return None
 
     return out_path
+
+
+def brazilian_date(date_str: Optional[str]) -> Optional[str]:
+    """
+    Converts a date string to the Brazilian date format (dd/mm/yyyy).
+
+    Args:
+        date_str (Optional[str]): The input date string.
+
+    Returns:
+        Optional[str]: The date in Brazilian format, or None if conversion fails.
+    """
+    if (date_str is None
+        or str(date_str).strip() == ""
+            or str(date_str).lower() == "nan"):
+        return None
+
+    parsed_date: pd.Timestamp = pd.to_datetime(date_str,
+                                               errors="coerce")
+
+    if parsed_date is None or pd.isna(parsed_date):
+        return None
+
+    return parsed_date.strftime("%d/%m/%Y")
