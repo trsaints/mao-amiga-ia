@@ -17,7 +17,7 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
     main_columns: pd.DataFrame = source[
         [ProjectsDatasetCols.ID_PROJETO,
          ProjectsDatasetCols.TX_NOME_PROJETO,
-         ProjectsDatasetCols.ID_OSC,
+         ProjectsDatasetCols.CD_IDENTIFICADOR_OSC,
          ProjectsDatasetCols.TX_DESCRICAO_PROJETO,
          ProjectsDatasetCols.DT_DATA_INICIO_PROJETO,
          ProjectsDatasetCols.DT_DATA_FIM_PROJETO,
@@ -37,7 +37,7 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
     columns_map = {
         ProjectsDatasetCols.ID_PROJETO: "ID Projeto",
         ProjectsDatasetCols.TX_NOME_PROJETO: "Nome",
-        ProjectsDatasetCols.ID_OSC: "ID OSC",
+        ProjectsDatasetCols.CD_IDENTIFICADOR_OSC: "CNPJ OSC",
         ProjectsDatasetCols.TX_DESCRICAO_PROJETO: "Descrição",
         ProjectsDatasetCols.DT_DATA_INICIO_PROJETO: "Data de Início",
         ProjectsDatasetCols.DT_DATA_FIM_PROJETO: "Data de Término",
