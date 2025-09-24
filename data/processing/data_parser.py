@@ -1,23 +1,29 @@
-from typing import Optional
+from typing import Optional, Literal
 import pandas as pd
 import os
 from data.constants.dataset_constants import DATASET_DIR
 
 
+PortugueseEncoding = Literal["utf-8", "latin1",
+                             "cp1252", "iso-8859-15", "mac-roman"]
+
+
 def to_utf8(dataset_filename: str,
-            separator: Optional[str] = None) -> Optional[str]:
+            separator: Optional[str] = None,
+            input_encoding: PortugueseEncoding = "utf-8") -> Optional[str]:
     """
     Converts a dataset to UTF-8 encoding and saves it with a new suffix.
-    This method assumes the input dataset is encoded in 'latin1', which is the encoding for legacy systems for the Portuguese language.
+    This method accepts various Portuguese encodings as input.
 
     Args:
         dataset_name (str): The name of the dataset file to convert.
+        separator (Optional[str]): The delimiter used in CSV files.
+        input_encoding (PortugueseEncoding): The encoding of the input file. Defaults to "utf-8".
 
     Returns:
         Optional[str]: The path to the converted dataset file, or None if an error occurred.
     """
     try:
-        INPUT_ENCODING = "latin1"
         OUTPUT_ENCODING = "utf-8"
 
         full_path = dataset_path(dataset_filename)
@@ -33,12 +39,12 @@ def to_utf8(dataset_filename: str,
                                     engine="openpyxl")
         elif extension == ".csv":
             main_df = pd.read_csv(full_path,
-                                  encoding=INPUT_ENCODING,
+                                  encoding=input_encoding,
                                   sep=separator if separator else ",",
                                   on_bad_lines="skip")
         else:
             main_df = pd.read_html(full_path,
-                                   encoding=INPUT_ENCODING)[0]
+                                   encoding=input_encoding)[0]
 
         result_path = output_path(filename)
 
