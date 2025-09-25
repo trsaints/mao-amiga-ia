@@ -2,18 +2,20 @@ from typing import Optional
 import pandas as pd
 
 from data.constants.raw_data_constants import ProjectsDatasetCols
-from data.processing.data_parser import brazilian_date, valid_cnpj
+from data.processing.data_parser import brazilian_date, to_numeric_value, valid_cnpj
 
 
-def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
+def projects_dataset(source: pd.DataFrame,
+                     osc_dataset: pd.DataFrame) -> Optional[pd.DataFrame]:
     """
-    Processes a dataset of projects, selecting and renaming specific columns.
+    Processes a raw dataset of projects, selecting and renaming specific columns. Results are filtered by region.
 
     Args:
         source (pd.DataFrame): The original dataset containing project information.
+        osc_dataset (pd.DataFrame): The processed OSC dataset to filter projects by region.
 
     Returns:
-        pd.DataFrame: The processed dataset with selected and renamed columns.
+        pd.DataFrame: The processed dataset, filtered by the "DF" region.
     """
     main_columns: pd.DataFrame = source[
         [ProjectsDatasetCols.ID_PROJETO,
@@ -27,13 +29,13 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
          ProjectsDatasetCols.NR_VALOR_TOTAL_PROJETO]
     ]
 
-    projects_statuses = [
+    parsed_statuses = [
         project_status(row[ProjectsDatasetCols.DT_DATA_INICIO_PROJETO],
                        row[ProjectsDatasetCols.DT_DATA_FIM_PROJETO])
         for _, row in source.iterrows()
     ]
 
-    status_df = pd.DataFrame(projects_statuses, columns=["Status"])
+    status_df = pd.DataFrame(parsed_statuses, columns=["Status"])
 
     main_columns.loc[:, ProjectsDatasetCols.DT_DATA_INICIO_PROJETO] = (
         main_columns[ProjectsDatasetCols.DT_DATA_INICIO_PROJETO]
@@ -63,14 +65,28 @@ def projects_dataset(source: pd.DataFrame) -> pd.DataFrame:
     }
 
     renamed = main_columns.rename(columns=columns_map)
-    result = (pd.concat([renamed.reset_index(drop=True), status_df], axis=1)
-              .drop_duplicates(["ID Projeto"])
-              .dropna(how="any", subset=["Data de Início"])
-              .dropna(how="all", subset=["Total de Beneficiários",
-                                         "Valor Captado (R$)",
-                                         "Valor Total (R$)"]))
+    non_null = (
+        pd.concat([renamed.reset_index(drop=True), status_df], axis=1)
+        .drop_duplicates(["ID Projeto"])
+        .dropna(how="any", subset=["Data de Início"])
+        .dropna(how="all", subset=["Total de Beneficiários",
+                                   "Valor Captado (R$)",
+                                   "Valor Total (R$)"])
+    )
 
-    return result
+    with_num_benefit_total = (
+        to_numeric_value(non_null, "Total de Beneficiários", "int")
+    )
+    with_num_collected_amount = (
+        to_numeric_value(with_num_benefit_total, "Valor Captado (R$)", "float")
+    )
+    with_num_total_amount = (
+        to_numeric_value(with_num_collected_amount,
+                         "Valor Total (R$)",
+                         "float")
+    )
+
+    return by_region("DF", with_num_total_amount, osc_dataset)
 
 
 def project_status(start_date: Optional[str],
@@ -117,7 +133,8 @@ def project_status(start_date: Optional[str],
 
     return "Não Informado"
 
-def by_region(region: str, 
+
+def by_region(region: str,
               projects_dataset: pd.DataFrame,
               osc_dataset: pd.DataFrame) -> Optional[pd.DataFrame]:
     """
@@ -134,7 +151,7 @@ def by_region(region: str,
 
     if osc_by_region.empty:
         return None
-    
+
     filtered_projects = projects_dataset.loc[
         projects_dataset["CNPJ OSC"].isin(osc_by_region["CNPJ"])
     ]
