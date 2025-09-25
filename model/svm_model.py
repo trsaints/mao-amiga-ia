@@ -1,4 +1,4 @@
-from machine_learning_model import MachineLearningModel
+from .machine_learning_model import MachineLearningModel
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay, precision_score, f1_score
