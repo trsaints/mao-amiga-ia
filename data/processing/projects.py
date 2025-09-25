@@ -17,17 +17,6 @@ def projects_dataset(source: pd.DataFrame,
     Returns:
         pd.DataFrame: The processed dataset, filtered by the "DF" region.
     """
-    main_columns: pd.DataFrame = source[
-        [ProjectsDatasetCols.ID_PROJETO,
-         ProjectsDatasetCols.TX_NOME_PROJETO,
-         ProjectsDatasetCols.CD_IDENTIFICADOR_OSC,
-         ProjectsDatasetCols.TX_DESCRICAO_PROJETO,
-         ProjectsDatasetCols.DT_DATA_INICIO_PROJETO,
-         ProjectsDatasetCols.DT_DATA_FIM_PROJETO,
-         ProjectsDatasetCols.NR_TOTAL_BENEFICIARIOS,
-         ProjectsDatasetCols.NR_VALOR_CAPTADO_PROJETO,
-         ProjectsDatasetCols.NR_VALOR_TOTAL_PROJETO]
-    ]
 
     parsed_statuses = [
         project_status(row[ProjectsDatasetCols.DT_DATA_INICIO_PROJETO],
@@ -36,6 +25,8 @@ def projects_dataset(source: pd.DataFrame,
     ]
 
     status_df = pd.DataFrame(parsed_statuses, columns=["Status"])
+
+    main_columns = source.copy()
 
     main_columns.loc[:, ProjectsDatasetCols.DT_DATA_INICIO_PROJETO] = (
         main_columns[ProjectsDatasetCols.DT_DATA_INICIO_PROJETO]
@@ -52,19 +43,8 @@ def projects_dataset(source: pd.DataFrame,
         .apply(valid_cnpj)
     )
 
-    columns_map = {
-        ProjectsDatasetCols.ID_PROJETO: "ID Projeto",
-        ProjectsDatasetCols.TX_NOME_PROJETO: "Nome",
-        ProjectsDatasetCols.CD_IDENTIFICADOR_OSC: "CNPJ OSC",
-        ProjectsDatasetCols.TX_DESCRICAO_PROJETO: "Descrição",
-        ProjectsDatasetCols.DT_DATA_INICIO_PROJETO: "Data de Início",
-        ProjectsDatasetCols.DT_DATA_FIM_PROJETO: "Data de Término",
-        ProjectsDatasetCols.NR_TOTAL_BENEFICIARIOS: "Total de Beneficiários",
-        ProjectsDatasetCols.NR_VALOR_CAPTADO_PROJETO: "Valor Captado (R$)",
-        ProjectsDatasetCols.NR_VALOR_TOTAL_PROJETO: "Valor Total (R$)"
-    }
+    renamed = main_columns_projects(main_columns)
 
-    renamed = main_columns.rename(columns=columns_map)
     non_null = (
         pd.concat([renamed.reset_index(drop=True), status_df], axis=1)
         .drop_duplicates(["ID Projeto"])
@@ -160,3 +140,39 @@ def by_region(region: str,
         return None
 
     return filtered_projects
+
+
+def main_columns_projects(projects_dataset: pd.DataFrame) -> pd.DataFrame:
+    """
+    Selects and renames the main columns of the 'Projects' dataset.
+
+    Args:
+        projects_dataset (pd.DataFrame): The original dataset containing project information. 
+    Returns:
+        pd.DataFrame: A copy of the dataset with selected and renamed columns.
+    """
+    main_columns = projects_dataset[
+        [ProjectsDatasetCols.ID_PROJETO,
+         ProjectsDatasetCols.TX_NOME_PROJETO,
+         ProjectsDatasetCols.CD_IDENTIFICADOR_OSC,
+         ProjectsDatasetCols.TX_DESCRICAO_PROJETO,
+         ProjectsDatasetCols.DT_DATA_INICIO_PROJETO,
+         ProjectsDatasetCols.DT_DATA_FIM_PROJETO,
+         ProjectsDatasetCols.NR_TOTAL_BENEFICIARIOS,
+         ProjectsDatasetCols.NR_VALOR_CAPTADO_PROJETO,
+         ProjectsDatasetCols.NR_VALOR_TOTAL_PROJETO]
+    ].copy()
+
+    columns_map = {
+        ProjectsDatasetCols.ID_PROJETO: "ID Projeto",
+        ProjectsDatasetCols.TX_NOME_PROJETO: "Nome",
+        ProjectsDatasetCols.CD_IDENTIFICADOR_OSC: "CNPJ OSC",
+        ProjectsDatasetCols.TX_DESCRICAO_PROJETO: "Descrição",
+        ProjectsDatasetCols.DT_DATA_INICIO_PROJETO: "Data de Início",
+        ProjectsDatasetCols.DT_DATA_FIM_PROJETO: "Data de Término",
+        ProjectsDatasetCols.NR_TOTAL_BENEFICIARIOS: "Total de Beneficiários",
+        ProjectsDatasetCols.NR_VALOR_CAPTADO_PROJETO: "Valor Captado (R$)",
+        ProjectsDatasetCols.NR_VALOR_TOTAL_PROJETO: "Valor Total (R$)"
+    }
+
+    return main_columns.rename(columns=columns_map)
