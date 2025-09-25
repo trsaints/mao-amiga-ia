@@ -18,7 +18,7 @@ source .venv/bin/activate # Deve ser executado toda vez que abrir o projeto
 py -m venv .venv
 
 Set-ExecutionPolicy Unrestricted -Scope User  # Garante que seu ambiente permite a execução de scripts. Se "Scope" for definido como "User", só precisa ser executado uma vez
-./Activate.ps1 # Deve ser executado toda vez que abrir o projeto
+./.venv/bin/Activate.ps1 # Deve ser executado toda vez que abrir o projeto
 ```
 
 2. Instale todas as dependências necessárias com o `pip`:
