@@ -16,13 +16,7 @@ def osc_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: The processed OSC dataset with selected and renamed columns.
     """
 
-    main_columns: pd.DataFrame = dataset[
-        [OngsDatasetCols.CNPJ,
-         OngsDatasetCols.TX_RAZAO_SOCIAL_OSC,
-         OngsDatasetCols.MUNICIPIO_NOME,
-         OngsDatasetCols.SITUACAO_CADASTRAL,
-         OngsDatasetCols.UF_SIGLA]
-    ]
+    main_columns = dataset.copy()
 
     # CNPJ column must be a string of 14 digits
     main_columns.loc[:, OngsDatasetCols.CNPJ] = (
@@ -31,15 +25,7 @@ def osc_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
         .apply(valid_cnpj)
     )
 
-    columns_map = {
-        OngsDatasetCols.CNPJ: "CNPJ",
-        OngsDatasetCols.TX_RAZAO_SOCIAL_OSC: "Razão Social",
-        OngsDatasetCols.MUNICIPIO_NOME: "Município",
-        OngsDatasetCols.SITUACAO_CADASTRAL: "Situação Cadastral",
-        OngsDatasetCols.UF_SIGLA: "UF"
-    }
-
-    renamed = main_columns.rename(columns=columns_map)
+    renamed = main_columns_osc(main_columns)
     area_codes = [osc_segmentation_codes(row) for _, row in dataset.iterrows()]
     area_codes_df = pd.DataFrame(area_codes, columns=["Áreas de Atuação"])
     result = (
@@ -98,3 +84,31 @@ def osc_segmentation_codes(entry: pd.Series) -> str:
     code_names = [code.name.replace("_", " ") for code in enum_codes]
 
     return ", ".join(code_names)
+
+
+def main_columns_osc(dataset: pd.DataFrame) -> pd.DataFrame:
+    """
+    Generates a processed OSC dataset with selected and renamed columns.
+
+    Args:
+        osc_dataset (pd.DataFrame): The original OSC dataset.
+    Returns:
+        pd.DataFrame: A copy of the dataset with selected and renamed columns.
+    """
+    main_columns = dataset[
+        [OngsDatasetCols.CNPJ,
+         OngsDatasetCols.TX_RAZAO_SOCIAL_OSC,
+         OngsDatasetCols.MUNICIPIO_NOME,
+         OngsDatasetCols.SITUACAO_CADASTRAL,
+         OngsDatasetCols.UF_SIGLA]
+    ].copy()
+
+    columns_map = {
+        OngsDatasetCols.CNPJ: "CNPJ",
+        OngsDatasetCols.TX_RAZAO_SOCIAL_OSC: "Razão Social",
+        OngsDatasetCols.MUNICIPIO_NOME: "Município",
+        OngsDatasetCols.SITUACAO_CADASTRAL: "Situação Cadastral",
+        OngsDatasetCols.UF_SIGLA: "UF"
+    }
+
+    return main_columns.rename(columns=columns_map)
