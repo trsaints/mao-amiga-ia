@@ -143,6 +143,7 @@ def valid_cnpj(raw_cnpj: str | int) -> Optional[str]:
     else:
         return None
 
+
 def write_dataset(name: str, dataset: pd.DataFrame) -> Optional[str]:
     """
     Writes the processed dataset into a `.csv` file.
@@ -163,3 +164,34 @@ def write_dataset(name: str, dataset: pd.DataFrame) -> Optional[str]:
         return result_path
     except:
         return None
+
+
+def to_numeric_value(dataset: pd.DataFrame,
+                     column: str,
+                     as_type: Literal["int", "float"]) -> pd.DataFrame:
+    """
+    Converts a specified column in the projects dataset to a numeric type.
+
+    Args:
+        projects_dataset (pd.DataFrame): The dataset containing project information.
+        column (str): The column to be converted to a numeric type.
+        as_type (Literal["int", "float"]): The target numeric type to parse to.
+
+    Returns:
+        pd.DataFrame: The dataset with the specified column converted to the desired numeric type.
+    """
+
+    result = dataset.copy()
+
+    result[column] = (
+        pd.to_numeric(result[column], errors="coerce")
+        .fillna(0)
+    )
+
+    if as_type == "int":
+        result[column] = result[column].astype(int)
+
+    elif as_type == "float":
+        result[column] = result[column].astype(float)
+
+    return result
