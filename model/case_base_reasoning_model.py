@@ -1,56 +1,40 @@
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
-from scipy.spatial.distance import euclidean
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+import numpy as np
 
 class CaseBasedReasoning:
-    def __init__(self, data: pd.DataFrame, categorical_cols, numeric_cols, target_col):
-        """
-        data: DataFrame com os casos
-        categorical_cols: lista de colunas categóricas
-        numeric_cols: lista de colunas numéricas
-        target_col: nome da coluna de saída (ex: 'valor_total')
-        """
+    def __init__(self, data, categorical_cols, numeric_cols, target_col):
         self.data = data.copy()
         self.categorical_cols = categorical_cols
         self.numeric_cols = numeric_cols
         self.target_col = target_col
-        self.scaler = MinMaxScaler()
-        self.df_processed = None
+        self.pipeline = None
+        self.transformed_data = None
 
     def preprocess(self):
-        """Transforma categorias e normaliza os dados"""
-        df = pd.get_dummies(self.data, columns=self.categorical_cols)
-        df[self.numeric_cols] = self.scaler.fit_transform(df[self.numeric_cols])
-        self.df_processed = df
-        return df
-
-    def compute_similarity(self, new_case):
-        """Calcula a similaridade (distância euclidiana) entre o novo caso e os existentes"""
-        if self.df_processed is None:
-            raise ValueError("Execute preprocess() antes de calcular similaridade.")
-        
-        new_df = pd.DataFrame([new_case])
-        new_df = pd.get_dummies(new_df, columns=self.categorical_cols)
-        
-        for col in self.df_processed.columns:
-            if col not in new_df:
-                new_df[col] = 0
-        new_df = new_df[self.df_processed.columns]
-
-        new_df[self.numeric_cols] = self.scaler.transform(new_df[self.numeric_cols])
-        
-        distances = []
-        for i, row in self.df_processed.iterrows():
-            dist = euclidean(new_df.iloc[0].values, row.values)
-            distances.append((i, dist))
-        
-        return sorted(distances, key=lambda x: x[1])
+        self.pipeline = ColumnTransformer(transformers=[
+            ('cat', OneHotEncoder(handle_unknown='ignore'), self.categorical_cols),
+            ('num', StandardScaler(), self.numeric_cols)
+        ])
+        self.transformed_data = self.pipeline.fit_transform(self.data)
 
     def predict(self, new_case, k=3):
-        """Prevê o valor total com base nos k casos mais parecidos"""
-        distances = self.compute_similarity(new_case)
-        k_nearest = distances[:k]
-        similar_cases = self.data.iloc[[i for i, _ in k_nearest]]
-        predicted_value = similar_cases[self.target_col].mean()
+        new_case_df = pd.DataFrame([new_case])
+        new_case_transformed = self.pipeline.transform(new_case_df)
 
-        return predicted_value, similar_cases
+        distances = euclidean_distances(new_case_transformed, self.transformed_data)[0]
+        nearest_indices = np.argsort(distances)[:k]
+
+        similar_cases_df = pd.DataFrame([
+            {**self.data.iloc[i].to_dict(), 'Distância': float(distances[i])}
+            for i in nearest_indices
+        ])
+
+        target_values = self.data.iloc[nearest_indices][self.target_col].astype(float).values
+        weights = 1 / (distances[nearest_indices] + 1e-6)
+        predicted_value = np.average(target_values, weights=weights)
+
+        return predicted_value, similar_cases_df
